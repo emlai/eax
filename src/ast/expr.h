@@ -60,6 +60,23 @@ private:
   double value;
 };
 
+/// Expression class for if statements.
+class IfExpr : public Expr {
+public:
+  IfExpr(std::unique_ptr<Expr> condition,
+         std::unique_ptr<Expr> thenBranch,
+         std::unique_ptr<Expr> elseBranch)
+    : condition(std::move(condition)),
+      thenBranch(std::move(thenBranch)),
+      elseBranch(std::move(elseBranch)) {}
+  llvm::Value* codegen() const override;
+  
+private:
+  std::unique_ptr<Expr> condition;
+  std::unique_ptr<Expr> thenBranch;
+  std::unique_ptr<Expr> elseBranch;
+};
+
 }
 
 #endif

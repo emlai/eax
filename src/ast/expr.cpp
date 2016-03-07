@@ -60,3 +60,59 @@ llvm::Value* NumberExpr::codegen() const {
   return llvm::ConstantFP::get(llvm::getGlobalContext(),
                                llvm::APFloat(value));
 }
+
+llvm::Value* IfExpr::codegen() const {
+  // condition
+  
+  llvm::Value* conditionValue = condition->codegen();
+  if (!conditionValue) return nullptr;
+  
+  // Convert condition to a bool by comparing to 0.
+  conditionValue = builder.CreateFCmpONE(
+    conditionValue,
+    llvm::ConstantFP::get(llvm::getGlobalContext(), llvm::APFloat(0.0)),
+    "ifcond");
+  
+  llvm::Function* fn = builder.GetInsertBlock()->getParent();
+  
+  llvm::BasicBlock* thenBlock = llvm::BasicBlock::Create(
+    llvm::getGlobalContext(), "then", fn);
+  llvm::BasicBlock* elseBlock = llvm::BasicBlock::Create(
+    llvm::getGlobalContext(), "else");
+  llvm::BasicBlock* mergeBlock = llvm::BasicBlock::Create(
+    llvm::getGlobalContext(), "ifcont");
+  
+  builder.CreateCondBr(conditionValue, thenBlock, elseBlock);
+  
+  // then
+  
+  builder.SetInsertPoint(thenBlock);
+  
+  llvm::Value* thenValue = thenBranch->codegen();
+  if (!thenValue) return nullptr;
+  
+  builder.CreateBr(mergeBlock);
+  thenBlock = builder.GetInsertBlock();
+  
+  // else
+  
+  fn->getBasicBlockList().push_back(elseBlock);
+  builder.SetInsertPoint(elseBlock);
+  
+  llvm::Value* elseValue = elseBranch->codegen();
+  if (!elseValue) return nullptr;
+  
+  builder.CreateBr(mergeBlock);
+  elseBlock = builder.GetInsertBlock();
+  
+  // merge
+  
+  fn->getBasicBlockList().push_back(mergeBlock);
+  builder.SetInsertPoint(mergeBlock);
+  
+  llvm::PHINode* phi = builder.CreatePHI(
+    llvm::Type::getDoubleTy(llvm::getGlobalContext()), 2, "iftmp");
+  phi->addIncoming(thenValue, thenBlock);
+  phi->addIncoming(elseValue, elseBlock);
+  return phi;
+}

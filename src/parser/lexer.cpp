@@ -31,6 +31,8 @@ int Lexer::getToken() {
     }
     
     if (identifierValue == "def") return TokenDef;
+    if (identifierValue == "if") return TokenIf;
+    if (identifierValue == "else") return TokenElse;
     return TokenIdentifier;
   }
   
@@ -123,6 +125,7 @@ std::unique_ptr<Expr> Lexer::parsePrimaryExpr() {
   switch (currentToken) {
     case TokenIdentifier: return parseIdentifierExpr();
     case TokenNumber: return parseNumberExpr();
+    case TokenIf: return parseIfExpr();
     case '(': return parseParenExpr();
     default:
       unknownTokenError(currentToken);
@@ -165,6 +168,26 @@ std::unique_ptr<Expr> Lexer::parseBinOpRHS(int exprPrecedence,
     lhs = llvm::make_unique<BinaryExpr>(binOp, std::move(lhs),
                                                std::move(rhs));
   }
+}
+
+std::unique_ptr<Expr> Lexer::parseIfExpr() {
+  nextToken(); // consume 'if'
+  
+  auto condition = parseExpr();
+  if (!condition) return nullptr;
+  
+  auto thenBranch = parseExpr();
+  if (!thenBranch) return nullptr;
+  
+  if (currentToken != TokenElse) fatalError("expected 'else'");
+  nextToken();
+  
+  auto elseBranch = parseExpr();
+  if (!elseBranch) return nullptr;
+  
+  return llvm::make_unique<IfExpr>(std::move(condition),
+                                   std::move(thenBranch),
+                                   std::move(elseBranch));
 }
 
 std::unique_ptr<Prototype> Lexer::parseFnPrototype() {

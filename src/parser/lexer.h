@@ -19,6 +19,8 @@ enum Token {
   TokenDef = -2,
   TokenIdentifier = -3,
   TokenNumber = -4,
+  TokenIf = -5,
+  TokenElse = -6
 };
 
 class Lexer {
@@ -44,6 +46,7 @@ private:
   std::unique_ptr<Expr> parsePrimaryExpr();
   std::unique_ptr<Expr> parseExpr();
   std::unique_ptr<Expr> parseBinOpRHS(int exprPrecedence, std::unique_ptr<Expr> lhs);
+  std::unique_ptr<Expr> parseIfExpr();
   std::unique_ptr<Prototype> parseFnPrototype();
   
   int getTokenPrecedence(int token) const;
