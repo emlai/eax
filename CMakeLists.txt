@@ -2,8 +2,11 @@ cmake_minimum_required(VERSION 3.0)
 project(eax VERSION 0.1.0)
 
 set(CMAKE_CXX_STANDARD 11)
-set(LLVM_CONFIG /usr/local/opt/llvm37/bin/llvm-config-3.7)
 set(LLVMLIBS core mcjit native)
+
+if(NOT DEFINED LLVM_CONFIG)
+  message(FATAL_ERROR "Set LLVM_CONFIG to the path to llvm-config")
+endif()
 
 execute_process(COMMAND ${LLVM_CONFIG} --cxxflags
                 OUTPUT_VARIABLE LLVM_CXX_FLAGS
