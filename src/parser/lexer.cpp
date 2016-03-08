@@ -208,10 +208,13 @@ std::unique_ptr<Prototype> Lexer::parseFnPrototype() {
   std::vector<std::string> paramNames;
   while (nextToken() == TokenIdentifier) {
     paramNames.push_back(std::move(identifierValue));
+    
+    if (nextToken() != ',')
+      break;
   }
   
   if (currentToken != ')') {
-    fatalError("expected ')' in prototype");
+    fatalError("expected ',' or ')' in parameter list");
   }
   nextToken();
   
