@@ -56,6 +56,7 @@ private:
   std::string identifierValue; // Filled in if TokenIdentifier.
   double numberValue; // Filled in if TokenNumber.
   std::unordered_map<int, int> const binaryOperatorPrecedence;
+  std::unordered_map<std::string, int> const idToTokenMap;
 };
 
 }

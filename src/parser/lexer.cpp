@@ -13,6 +13,9 @@ using namespace eax;
 Lexer::Lexer()
   : binaryOperatorPrecedence{
       {'<', 1}, {'>', 1}, {'+', 2}, {'-', 2}, {'*', 3}, {'/', 3}
+    },
+    idToTokenMap{
+      {"def", TokenDef}, {"if", TokenIf}, {"else", TokenElse}
     } {
 }
 
@@ -30,10 +33,11 @@ int Lexer::getToken() {
       identifierValue += lastChar;
     }
     
-    if (identifierValue == "def") return TokenDef;
-    if (identifierValue == "if") return TokenIf;
-    if (identifierValue == "else") return TokenElse;
-    return TokenIdentifier;
+    auto iterator = idToTokenMap.find(identifierValue);
+    if (iterator != idToTokenMap.end())
+      return iterator->second;
+    else
+      return TokenIdentifier;
   }
   
   if (std::isdigit(lastChar) || lastChar == '.') {
