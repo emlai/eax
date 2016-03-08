@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/LLVMContext.h>
@@ -72,8 +73,10 @@ static void handleToplevelExpr() {
 }
 
 static void mainInterpreterLoop() {
-  while (true) {
-    std::cout << " > ";
+  std::cout << std::setfill('0');
+  
+  for (int count = 0;; ++count) {
+    std::cout << std::setw(3) << count << "> ";
     
     switch (lexer.nextToken()) {
     case TokenEof:
