@@ -25,6 +25,18 @@ private:
   std::string name;
 };
 
+/// Expression class for unary operations.
+class UnaryExpr : public Expr {
+public:
+  UnaryExpr(char op, std::unique_ptr<Expr> operand)
+    : op(op), operand(std::move(operand)) {}
+  llvm::Value* codegen() const override;
+  
+private:
+  char op;
+  std::unique_ptr<Expr> operand;
+};
+
 /// Expression class for binary operations.
 class BinaryExpr : public Expr {
 public:

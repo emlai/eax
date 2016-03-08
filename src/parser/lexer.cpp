@@ -139,9 +139,22 @@ std::unique_ptr<Expr> Lexer::parsePrimaryExpr() {
 }
 
 std::unique_ptr<Expr> Lexer::parseExpr() {
-  auto lhs = parsePrimaryExpr();
+  auto lhs = parseUnaryExpr();
   if (!lhs) return nullptr;
   return parseBinOpRHS(0, std::move(lhs));
+}
+
+std::unique_ptr<Expr> Lexer::parseUnaryExpr() {
+  if (currentToken < 0 || currentToken == '(' || currentToken == ',')
+    return parsePrimaryExpr();
+  
+  int opCode = currentToken;
+  nextToken();
+  
+  if (auto operand = parseUnaryExpr())
+    return llvm::make_unique<UnaryExpr>(opCode, std::move(operand));
+  
+  return nullptr;
 }
 
 std::unique_ptr<Expr> Lexer::parseBinOpRHS(int exprPrecedence,
@@ -157,8 +170,8 @@ std::unique_ptr<Expr> Lexer::parseBinOpRHS(int exprPrecedence,
     auto binOp = currentToken;
     nextToken();
     
-    // Parse the primary expression after the binary operator.
-    auto rhs = parsePrimaryExpr();
+    // Parse the unary expression after the binary operator.
+    auto rhs = parseUnaryExpr();
     if (!rhs) return nullptr;
     
     // If binOp binds less tightly with rhs than the operator after

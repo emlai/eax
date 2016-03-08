@@ -46,6 +46,7 @@ private:
   std::unique_ptr<Expr> parseIdentifierExpr();
   std::unique_ptr<Expr> parsePrimaryExpr();
   std::unique_ptr<Expr> parseExpr();
+  std::unique_ptr<Expr> parseUnaryExpr();
   std::unique_ptr<Expr> parseBinOpRHS(int exprPrecedence, std::unique_ptr<Expr> lhs);
   std::unique_ptr<Expr> parseIfExpr();
   std::unique_ptr<Prototype> parseFnPrototype();

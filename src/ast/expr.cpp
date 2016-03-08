@@ -15,6 +15,25 @@ llvm::Value* VariableExpr::codegen() const {
   return namedValues.at(name);
 }
 
+llvm::Value* UnaryExpr::codegen() const {
+  llvm::Value* operandValue = operand->codegen();
+  if (!operandValue) return nullptr;
+  
+  switch (op) {
+  case '!':
+    operandValue = builder.CreateFCmpOEQ(
+      operandValue,
+      llvm::ConstantFP::get(llvm::getGlobalContext(), llvm::APFloat(0.0)),
+      "negtmp");
+    // Convert boolean 0 or 1 to double 0.0 or 1.0.
+    return builder.CreateUIToFP(operandValue,
+                                llvm::Type::getDoubleTy(llvm::getGlobalContext()),
+                                "booltmp");
+  default:
+    fatalError("unsupported unary operator");
+  }
+}
+
 llvm::Value* BinaryExpr::codegen() const {
   auto left = lhs->codegen();
   auto right = rhs->codegen();
