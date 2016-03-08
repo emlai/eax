@@ -12,7 +12,7 @@ using namespace eax;
 
 Lexer::Lexer()
   : binaryOperatorPrecedence{
-      {'<', 1}, {'>', 1}, {'+', 2}, {'-', 2}, {'*', 3}, {'/', 3}
+      {'=', 1}, {'<', 2}, {'>', 2}, {'+', 3}, {'-', 3}, {'*', 4}, {'/', 4}
     },
     idToTokenMap{
       {"def", TokenDef}, {"if", TokenIf}, {"then", TokenThen},

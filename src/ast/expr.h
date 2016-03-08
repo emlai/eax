@@ -20,6 +20,7 @@ class VariableExpr : public Expr {
 public:
   VariableExpr(std::string name) : name(std::move(name)) {}
   llvm::Value* codegen() const override;
+  std::string const& getName() const { return name; }
   
 private:
   std::string name;
@@ -43,6 +44,9 @@ public:
   BinaryExpr(char op, std::unique_ptr<Expr> lhs, std::unique_ptr<Expr> rhs)
     : op(op), lhs(std::move(lhs)), rhs(std::move(rhs)) {}
   llvm::Value* codegen() const override;
+  
+private:
+  llvm::Value* codegenAssignment() const;
   
 private:
   char op;

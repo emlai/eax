@@ -35,6 +35,11 @@ llvm::Value* UnaryExpr::codegen() const {
 }
 
 llvm::Value* BinaryExpr::codegen() const {
+  // Special case for '=' because we don't
+  // want to emit lhs as an expression.
+  if (op == '=')
+    return codegenAssignment();
+  
   auto left = lhs->codegen();
   auto right = rhs->codegen();
   
@@ -53,6 +58,21 @@ llvm::Value* BinaryExpr::codegen() const {
   default:
     fatalError("unsupported binary operator");
   }
+}
+
+llvm::Value* BinaryExpr::codegenAssignment() const {
+  VariableExpr* lhsVar = dynamic_cast<VariableExpr*>(lhs.get());
+  if (!lhsVar) fatalError("left operand of '=' must be a variable");
+  
+  llvm::Value* rhsValue = rhs->codegen();
+  if (!rhsValue) return nullptr;
+  
+  auto variableIter = namedValues.find(lhsVar->getName());
+  if (variableIter == namedValues.end())
+    fatalError("unknown variable name");
+  
+  builder.CreateStore(rhsValue, variableIter->second);
+  return rhsValue;
 }
 
 llvm::Value* CallExpr::codegen() const {
