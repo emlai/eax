@@ -12,7 +12,7 @@
 using namespace eax;
 
 llvm::Value* VariableExpr::codegen() const {
-  return namedValues.at(name);
+  return builder.CreateLoad(namedValues.at(name), name);
 }
 
 llvm::Value* UnaryExpr::codegen() const {

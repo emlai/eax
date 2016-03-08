@@ -8,7 +8,7 @@ namespace eax {
 std::unique_ptr<llvm::Module> globalModule;
 llvm::IRBuilder<> builder(llvm::getGlobalContext());
 std::unique_ptr<llvm::legacy::FunctionPassManager> fnPassManager;
-std::unordered_map<std::string, llvm::Value*> namedValues;
+std::unordered_map<std::string, llvm::AllocaInst*> namedValues;
 std::unordered_map<std::string, std::unique_ptr<Prototype>> fnPrototypes;
 
 llvm::Function* getFunction(llvm::StringRef name) {
@@ -24,6 +24,14 @@ llvm::Function* getFunction(llvm::StringRef name) {
   
   // If no existing prototype exists, return null.
   return nullptr;
+}
+
+llvm::AllocaInst* createEntryBlockAlloca(llvm::Function* fn,
+                                         llvm::StringRef varName) {
+  llvm::IRBuilder<> tmpBuilder(&fn->getEntryBlock(), fn->getEntryBlock().begin());
+  return tmpBuilder.CreateAlloca(llvm::Type::getDoubleTy(llvm::getGlobalContext()),
+                                 0,
+                                 varName);
 }
 
 }

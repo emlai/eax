@@ -21,6 +21,8 @@ static void initModuleAndFnPassManager() {
   globalModule->setDataLayout(jit->getTargetMachine().createDataLayout());
   
   fnPassManager = llvm::make_unique<llvm::legacy::FunctionPassManager>(globalModule.get());
+  // Promote allocas to registers.
+  fnPassManager->add(llvm::createPromoteMemoryToRegisterPass());
   // Do simple "peephole" and bit-twiddling  optimizations.
   fnPassManager->add(llvm::createInstructionCombiningPass());
   // Reassociate expressions.

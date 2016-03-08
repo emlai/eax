@@ -24,3 +24,14 @@ llvm::Function* Prototype::codegen() const {
   
   return fn;
 }
+
+void Prototype::createParamAllocas(llvm::Function* fn) const {
+  llvm::Function::arg_iterator argIter = fn->arg_begin();
+  
+  for (auto& paramName : paramNames) {
+    llvm::AllocaInst* alloca = createEntryBlockAlloca(fn, paramName);
+    builder.CreateStore(argIter, alloca);
+    namedValues[paramName] = alloca;
+    ++argIter;
+  }
+}

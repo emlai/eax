@@ -15,6 +15,10 @@ public:
   llvm::Function* codegen() const;
   llvm::StringRef getName() const { return name; }
   
+  /// Creates an 'alloca' instruction for each parameter and registers the
+  /// parameter in the symbol table so that references to it will succeed.
+  void createParamAllocas(llvm::Function*) const;
+  
 private:
   std::string name;
   std::vector<std::string> paramNames;

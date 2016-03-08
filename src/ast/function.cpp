@@ -7,6 +7,7 @@
 using namespace eax;
 
 llvm::Function* Function::codegen() {
+  auto& prototypeRef = *prototype;
   llvm::StringRef prototypeName = prototype->getName();
   fnPrototypes[prototypeName] = std::move(prototype);
   auto fn = getFunction(prototypeName);
@@ -18,9 +19,7 @@ llvm::Function* Function::codegen() {
   builder.SetInsertPoint(basicBlock);
   
   namedValues.clear();
-  for (auto& arg : fn->args()) {
-    namedValues[arg.getName()] = &arg;
-  }
+  prototypeRef.createParamAllocas(fn);
   
   if (auto value = body->codegen()) {
     builder.CreateRet(value);
