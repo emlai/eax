@@ -15,7 +15,8 @@ Lexer::Lexer()
       {'<', 1}, {'>', 1}, {'+', 2}, {'-', 2}, {'*', 3}, {'/', 3}
     },
     idToTokenMap{
-      {"def", TokenDef}, {"if", TokenIf}, {"else", TokenElse}
+      {"def", TokenDef}, {"if", TokenIf}, {"then", TokenThen},
+      {"else", TokenElse}
     } {
 }
 
@@ -179,6 +180,9 @@ std::unique_ptr<Expr> Lexer::parseIfExpr() {
   
   auto condition = parseExpr();
   if (!condition) return nullptr;
+  
+  if (currentToken == TokenThen)
+    nextToken();
   
   auto thenBranch = parseExpr();
   if (!thenBranch) return nullptr;

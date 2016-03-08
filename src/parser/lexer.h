@@ -20,7 +20,8 @@ enum Token {
   TokenIdentifier = -3,
   TokenNumber = -4,
   TokenIf = -5,
-  TokenElse = -6
+  TokenThen = -6,
+  TokenElse = -7
 };
 
 class Lexer {
