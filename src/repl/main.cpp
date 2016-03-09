@@ -83,8 +83,7 @@ static void mainInterpreterLoop() {
     switch (lexer.nextToken()) {
     case TokenEof:
       return;
-    case ';':
-      // Ignore top-level semicolons.
+    case '\n':
       break;
     case TokenDef:
       handleFnDefinition();

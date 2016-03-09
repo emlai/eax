@@ -21,9 +21,9 @@ Lexer::Lexer()
 }
 
 int Lexer::getToken() {
-  static int lastChar = '\n';
+  int lastChar = readChar();
   
-  while (std::isspace(lastChar)) {
+  while (std::isblank(lastChar)) { // Skip spaces and tabs
     lastChar = readChar();
   }
   
@@ -33,6 +33,8 @@ int Lexer::getToken() {
     while (std::isalnum(lastChar = readChar())) {
       identifierValue += lastChar;
     }
+    
+    std::ungetc(lastChar, stdin);
     
     auto iterator = idToTokenMap.find(identifierValue);
     if (iterator != idToTokenMap.end())
@@ -47,6 +49,8 @@ int Lexer::getToken() {
       numberStr += lastChar;
       lastChar = readChar();
     } while (std::isdigit(lastChar) || lastChar == '.');
+    
+    std::ungetc(lastChar, stdin);
     
     numberValue = std::stod(numberStr);
     return TokenNumber;
@@ -66,9 +70,7 @@ int Lexer::getToken() {
     return TokenEof;
   }
   
-  auto prevChar = lastChar;
-  lastChar = readChar();
-  return prevChar;
+  return lastChar;
 }
 
 std::unique_ptr<Expr> Lexer::parseNumberExpr() {
