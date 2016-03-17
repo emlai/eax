@@ -10,14 +10,19 @@
 
 using namespace eax;
 
-Lexer::Lexer()
-  : binaryOperatorPrecedence{
-      {'=', 1}, {'<', 2}, {'>', 2}, {'+', 3}, {'-', 3}, {'*', 4}, {'/', 4}
-    },
-    idToTokenMap{
-      {"def", TokenDef}, {"if", TokenIf}, {"then", TokenThen},
-      {"else", TokenElse}
-    } {
+Lexer::Lexer() {
+  binaryOperatorPrecedence['='] = 1;
+  binaryOperatorPrecedence['<'] = 2;
+  binaryOperatorPrecedence['>'] = 2;
+  binaryOperatorPrecedence['+'] = 3;
+  binaryOperatorPrecedence['-'] = 3;
+  binaryOperatorPrecedence['*'] = 4;
+  binaryOperatorPrecedence['/'] = 4;
+  
+  idToTokenMap["def"] = TokenDef;
+  idToTokenMap["if"] = TokenIf;
+  idToTokenMap["then"] = TokenThen;
+  idToTokenMap["else"] = TokenElse;
 }
 
 int Lexer::getToken() {
