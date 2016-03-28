@@ -55,6 +55,9 @@ llvm::Value* BinaryExpr::codegen() const {
   case '>': std::swap(left, right); eax_fallthrough;
   case '<':
     return boolToDouble(builder.CreateFCmpULT(left, right, "cmptmp"));
+  case '>=': std::swap(left, right); eax_fallthrough;
+  case '<=':
+    return boolToDouble(builder.CreateFCmpULE(left, right, "cmptmp"));
   default:
     fatalError("unsupported binary operator");
   }

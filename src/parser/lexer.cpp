@@ -15,6 +15,8 @@ Lexer::Lexer() {
   binaryOperatorPrecedence['=='] = 2;
   binaryOperatorPrecedence['<'] = 3;
   binaryOperatorPrecedence['>'] = 3;
+  binaryOperatorPrecedence['<='] = 3;
+  binaryOperatorPrecedence['>='] = 3;
   binaryOperatorPrecedence['+'] = 4;
   binaryOperatorPrecedence['-'] = 4;
   binaryOperatorPrecedence['*'] = 5;
@@ -66,6 +68,22 @@ int Lexer::getToken() {
     int ch = readChar();
     if (ch == '=')
       return '==';
+    else
+      std::ungetc(ch, stdin);
+  }
+  
+  if (lastChar == '<') {
+    int ch = readChar();
+    if (ch == '=')
+      return '<=';
+    else
+      std::ungetc(ch, stdin);
+  }
+  
+  if (lastChar == '>') {
+    int ch = readChar();
+    if (ch == '=')
+      return '>=';
     else
       std::ungetc(ch, stdin);
   }
