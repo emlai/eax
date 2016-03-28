@@ -41,6 +41,10 @@ private:
   /// Returns the next character from the input source.
   int readChar() const { return std::getchar(); }
   
+  /// Puts a character back to the input source, so that the next call
+  /// to readChar() will return that character.
+  void unreadChar(int ch) const { std::ungetc(ch, stdin); }
+  
   std::unique_ptr<Expr> parseNumberExpr();
   std::unique_ptr<Expr> parseParenExpr();
   std::unique_ptr<Expr> parseIdentifierExpr();

@@ -42,7 +42,7 @@ int Lexer::getToken() {
       identifierValue += lastChar;
     }
     
-    std::ungetc(lastChar, stdin);
+    unreadChar(lastChar);
     
     auto iterator = idToTokenMap.find(identifierValue);
     if (iterator != idToTokenMap.end())
@@ -58,7 +58,7 @@ int Lexer::getToken() {
       lastChar = readChar();
     } while (std::isdigit(lastChar) || lastChar == '.');
     
-    std::ungetc(lastChar, stdin);
+    unreadChar(lastChar);
     
     numberValue = std::stod(numberStr);
     return TokenNumber;
@@ -69,7 +69,7 @@ int Lexer::getToken() {
     if (ch == '=')
       return '==';
     else
-      std::ungetc(ch, stdin);
+      unreadChar(ch);
   }
   
   if (lastChar == '<') {
@@ -77,7 +77,7 @@ int Lexer::getToken() {
     if (ch == '=')
       return '<=';
     else
-      std::ungetc(ch, stdin);
+      unreadChar(ch);
   }
   
   if (lastChar == '>') {
@@ -85,7 +85,7 @@ int Lexer::getToken() {
     if (ch == '=')
       return '>=';
     else
-      std::ungetc(ch, stdin);
+      unreadChar(ch);
   }
   
   if (lastChar == '#') {
