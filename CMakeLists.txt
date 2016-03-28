@@ -25,6 +25,8 @@ execute_process(COMMAND ${LLVM_CONFIG} --libs ${LLVMLIBS}
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 string(REGEX REPLACE "-O[1-3]?" "-O0 -g" CMAKE_CXX_FLAGS ${LLVM_CXX_FLAGS})
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-multichar")
+
 link_directories(${LLVM_LIBRARY_DIR})
 
 file(GLOB COMPILER_SOURCES src/**/*.h src/**/*.cpp)

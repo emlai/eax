@@ -41,7 +41,7 @@ private:
 /// Expression class for binary operations.
 class BinaryExpr : public Expr {
 public:
-  BinaryExpr(char op, std::unique_ptr<Expr> lhs, std::unique_ptr<Expr> rhs)
+  BinaryExpr(int op, std::unique_ptr<Expr> lhs, std::unique_ptr<Expr> rhs)
     : op(op), lhs(std::move(lhs)), rhs(std::move(rhs)) {}
   llvm::Value* codegen() const override;
   
@@ -49,7 +49,7 @@ private:
   llvm::Value* codegenAssignment() const;
   
 private:
-  char op;
+  int op;
   std::unique_ptr<Expr> lhs;
   std::unique_ptr<Expr> rhs;
 };
