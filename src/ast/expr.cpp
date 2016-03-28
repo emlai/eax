@@ -11,6 +11,12 @@
 
 using namespace eax;
 
+static llvm::Value* boolToDouble(llvm::Value* boolean) {
+  return builder.CreateUIToFP(boolean,
+                              llvm::Type::getDoubleTy(llvm::getGlobalContext()),
+                              "booltmp");
+}
+
 llvm::Value* VariableExpr::codegen() const {
   return builder.CreateLoad(namedValues.at(name), name);
 }
@@ -21,14 +27,10 @@ llvm::Value* UnaryExpr::codegen() const {
   
   switch (op) {
   case '!':
-    operandValue = builder.CreateFCmpOEQ(
+    return boolToDouble(builder.CreateFCmpOEQ(
       operandValue,
       llvm::ConstantFP::get(llvm::getGlobalContext(), llvm::APFloat(0.0)),
-      "negtmp");
-    // Convert boolean 0 or 1 to double 0.0 or 1.0.
-    return builder.CreateUIToFP(operandValue,
-                                llvm::Type::getDoubleTy(llvm::getGlobalContext()),
-                                "booltmp");
+      "negtmp"));
   default:
     fatalError("unsupported unary operator");
   }
@@ -50,11 +52,7 @@ llvm::Value* BinaryExpr::codegen() const {
   case '/': return builder.CreateFDiv(left, right, "divtmp");
   case '>': std::swap(left, right); eax_fallthrough;
   case '<':
-    left = builder.CreateFCmpULT(left, right, "cmptmp");
-    // Convert boolean 0 or 1 to double 0.0 or 1.0.
-    return builder.CreateUIToFP(left,
-                                llvm::Type::getDoubleTy(llvm::getGlobalContext()),
-                                "booltmp");
+    return boolToDouble(builder.CreateFCmpULT(left, right, "cmptmp"));
   default:
     fatalError("unsupported binary operator");
   }
