@@ -12,12 +12,13 @@ using namespace eax;
 
 Lexer::Lexer() {
   binaryOperatorPrecedence['='] = 1;
-  binaryOperatorPrecedence['<'] = 2;
-  binaryOperatorPrecedence['>'] = 2;
-  binaryOperatorPrecedence['+'] = 3;
-  binaryOperatorPrecedence['-'] = 3;
-  binaryOperatorPrecedence['*'] = 4;
-  binaryOperatorPrecedence['/'] = 4;
+  binaryOperatorPrecedence['=='] = 2;
+  binaryOperatorPrecedence['<'] = 3;
+  binaryOperatorPrecedence['>'] = 3;
+  binaryOperatorPrecedence['+'] = 4;
+  binaryOperatorPrecedence['-'] = 4;
+  binaryOperatorPrecedence['*'] = 5;
+  binaryOperatorPrecedence['/'] = 5;
   
   idToTokenMap["def"] = TokenDef;
   idToTokenMap["if"] = TokenIf;
@@ -59,6 +60,14 @@ int Lexer::getToken() {
     
     numberValue = std::stod(numberStr);
     return TokenNumber;
+  }
+  
+  if (lastChar == '=') {
+    int ch = readChar();
+    if (ch == '=')
+      return '==';
+    else
+      std::ungetc(ch, stdin);
   }
   
   if (lastChar == '#') {

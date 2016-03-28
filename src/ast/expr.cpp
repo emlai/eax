@@ -50,6 +50,8 @@ llvm::Value* BinaryExpr::codegen() const {
   case '-': return builder.CreateFSub(left, right, "subtmp");
   case '*': return builder.CreateFMul(left, right, "multmp");
   case '/': return builder.CreateFDiv(left, right, "divtmp");
+  case '==':
+    return boolToDouble(builder.CreateFCmpOEQ(left, right, "eqltmp"));
   case '>': std::swap(left, right); eax_fallthrough;
   case '<':
     return boolToDouble(builder.CreateFCmpULT(left, right, "cmptmp"));
