@@ -31,6 +31,13 @@ llvm::Value* UnaryExpr::codegen() const {
       operandValue,
       llvm::ConstantFP::get(llvm::getGlobalContext(), llvm::APFloat(0.0)),
       "negtmp"));
+  case '+':
+    return operandValue;
+  case '-':
+    return builder.CreateFSub(
+      llvm::ConstantFP::get(llvm::getGlobalContext(), llvm::APFloat(0.0)),
+      operandValue,
+      "subtmp");
   default:
     fatalError("unsupported unary operator");
   }
