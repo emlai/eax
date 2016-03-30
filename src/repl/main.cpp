@@ -68,7 +68,7 @@ static void handleToplevelExpr() {
       std::cout << "Parsed a top-level expression." << std::endl;
       
       // JIT the module containing the anonymous expression,
-      // keeping a handle so we can free it layer;
+      // keeping a handle so we can free it later.
       auto moduleHandle = jit->addModule(std::move(globalModule));
       initModuleAndFnPassManager();
       
