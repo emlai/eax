@@ -82,6 +82,17 @@ private:
   double value;
 };
 
+/// Expression class for the boolean literals "true" and "false".
+class BoolExpr : public Expr {
+public:
+  BoolExpr(bool value) : value(value) {}
+  void accept(AstVisitor& visitor) override { visitor.visit(*this); }
+  bool getValue() const { return value; }
+  
+private:
+  bool value;
+};
+
 /// Expression class for if statements.
 class IfExpr : public Expr {
 public:

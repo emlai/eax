@@ -18,6 +18,16 @@ llvm::Value* IrGen::boolToDouble(llvm::Value* boolean) {
                               "booltmp");
 }
 
+llvm::Value* IrGen::createLogicalNegation(llvm::Value* operand) {
+  if (operand->getType() != llvm::Type::getInt1Ty(llvm::getGlobalContext()))
+    fatalError("logical negation requires a Bool operand");
+  
+  return builder.CreateICmpEQ(
+    operand,
+    llvm::ConstantInt::getFalse(llvm::getGlobalContext()),
+    "negtmp");
+}
+
 void IrGen::visit(VariableExpr& expr) {
   values.push(builder.CreateLoad(namedValues.at(expr.getName()), expr.getName()));
 }
@@ -32,11 +42,7 @@ void IrGen::visit(UnaryExpr& expr) {
   
   switch (expr.getOp()) {
   case '!':
-    v = boolToDouble(builder.CreateFCmpOEQ(
-      operandValue,
-      llvm::ConstantFP::get(llvm::getGlobalContext(), llvm::APFloat(0.0)),
-      "negtmp"));
-    break;
+    v = createLogicalNegation(operandValue); break;
   case '+':
     v = operandValue; break;
   case '-':
@@ -87,11 +93,11 @@ void IrGen::visit(BinaryExpr& expr) {
   case '-': v = builder.CreateFSub(left, right, "subtmp"); break;
   case '*': v = builder.CreateFMul(left, right, "multmp"); break;
   case '/': v = builder.CreateFDiv(left, right, "divtmp"); break;
-  case '==': v = boolToDouble(builder.CreateFCmpOEQ(left, right, "eqltmp")); break;
+  case '==': v = builder.CreateFCmpOEQ(left, right, "eqltmp"); break;
   case '>': std::swap(left, right); eax_fallthrough;
-  case '<': v = boolToDouble(builder.CreateFCmpULT(left, right, "cmptmp")); break;
+  case '<': v = builder.CreateFCmpULT(left, right, "cmptmp"); break;
   case '>=': std::swap(left, right); eax_fallthrough;
-  case '<=': v = boolToDouble(builder.CreateFCmpULE(left, right, "cmptmp")); break;
+  case '<=': v = builder.CreateFCmpULE(left, right, "cmptmp"); break;
   default:
     fatalError("unsupported binary operator");
   }
@@ -126,6 +132,11 @@ void IrGen::visit(CallExpr& expr) {
 void IrGen::visit(NumberExpr& expr) {
   values.push(llvm::ConstantFP::get(llvm::getGlobalContext(),
                                     llvm::APFloat(expr.getValue())));
+}
+
+void IrGen::visit(BoolExpr& expr) {
+  values.push(llvm::ConstantInt::get(llvm::getGlobalContext(),
+                                     llvm::APInt(1, expr.getValue())));
 }
 
 void IrGen::visit(IfExpr& expr) {

@@ -17,6 +17,7 @@ private:
   void visit(BinaryExpr&) override;
   void visit(CallExpr&) override;
   void visit(NumberExpr&) override;
+  void visit(BoolExpr&) override;
   void visit(IfExpr&) override;
   void visit(Function&) override;
   void visit(Prototype&) override;

@@ -8,6 +8,7 @@ class UnaryExpr;
 class BinaryExpr;
 class CallExpr;
 class NumberExpr;
+class BoolExpr;
 class IfExpr;
 class Function;
 class Prototype;
@@ -19,6 +20,7 @@ public:
   virtual void visit(BinaryExpr&) = 0;
   virtual void visit(CallExpr&) = 0;
   virtual void visit(NumberExpr&) = 0;
+  virtual void visit(BoolExpr&) = 0;
   virtual void visit(IfExpr&) = 0;
   virtual void visit(Function&) = 0;
   virtual void visit(Prototype&) = 0;

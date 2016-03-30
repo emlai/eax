@@ -21,7 +21,9 @@ enum Token {
   TokenNumber = -4,
   TokenIf = -5,
   TokenThen = -6,
-  TokenElse = -7
+  TokenElse = -7,
+  TokenTrue = -8,
+  TokenFalse = -9
 };
 
 class Lexer {
@@ -46,6 +48,7 @@ private:
   void unreadChar(int ch) const { std::ungetc(ch, stdin); }
   
   std::unique_ptr<Expr> parseNumberExpr();
+  std::unique_ptr<Expr> parseBoolExpr();
   std::unique_ptr<Expr> parseParenExpr();
   std::unique_ptr<Expr> parseIdentifierExpr();
   std::unique_ptr<Expr> parsePrimaryExpr();

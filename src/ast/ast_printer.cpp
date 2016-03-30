@@ -38,6 +38,10 @@ void AstPrinter::visit(NumberExpr& expr) {
   out << expr.getValue();
 }
 
+void AstPrinter::visit(BoolExpr& expr) {
+  out << (expr.getValue() ? "true" : "false");
+}
+
 void AstPrinter::visit(IfExpr& expr) {
   out << "if ";
   expr.getCondition().accept(*this);

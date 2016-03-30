@@ -6,6 +6,7 @@
 #include "../ast/expr.h"
 #include "../ast/function.h"
 #include "../util/error.h"
+#include "../util/macros.h"
 
 using namespace eax;
 
@@ -25,6 +26,8 @@ Lexer::Lexer() {
   idToTokenMap["if"] = TokenIf;
   idToTokenMap["then"] = TokenThen;
   idToTokenMap["else"] = TokenElse;
+  idToTokenMap["true"] = TokenTrue;
+  idToTokenMap["false"] = TokenFalse;
 }
 
 int Lexer::getToken() {
@@ -110,6 +113,12 @@ std::unique_ptr<Expr> Lexer::parseNumberExpr() {
   return std::move(expr);
 }
 
+std::unique_ptr<Expr> Lexer::parseBoolExpr() {
+  auto expr = llvm::make_unique<BoolExpr>(currentToken == TokenTrue);
+  nextToken(); // consume the literal
+  return std::move(expr);
+}
+
 std::unique_ptr<Expr> Lexer::parseParenExpr() {
   nextToken(); // consume '('
   auto value = parseExpr();
@@ -163,6 +172,8 @@ std::unique_ptr<Expr> Lexer::parsePrimaryExpr() {
   switch (currentToken) {
     case TokenIdentifier: return parseIdentifierExpr();
     case TokenNumber: return parseNumberExpr();
+    case TokenTrue: eax_fallthrough;
+    case TokenFalse: return parseBoolExpr();
     case TokenIf: return parseIfExpr();
     case '(': return parseParenExpr();
     default:
