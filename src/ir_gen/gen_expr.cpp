@@ -28,6 +28,15 @@ llvm::Value* IrGen::createLogicalNegation(llvm::Value* operand) {
     "negtmp");
 }
 
+llvm::Value* IrGen::createEqualityComparison(llvm::Value* lhs, llvm::Value* rhs) {
+  if (lhs->getType() == llvm::Type::getInt1Ty(llvm::getGlobalContext()))
+    return builder.CreateICmpEQ(lhs, rhs, "eqltmp");
+  else if (lhs->getType() == llvm::Type::getDoubleTy(llvm::getGlobalContext()))
+    return builder.CreateFCmpOEQ(lhs, rhs, "eqltmp");
+  else
+    fatalError("unknown type");
+}
+
 void IrGen::visit(VariableExpr& expr) {
   values.push(builder.CreateLoad(namedValues.at(expr.getName()), expr.getName()));
 }
@@ -93,7 +102,7 @@ void IrGen::visit(BinaryExpr& expr) {
   case '-': v = builder.CreateFSub(left, right, "subtmp"); break;
   case '*': v = builder.CreateFMul(left, right, "multmp"); break;
   case '/': v = builder.CreateFDiv(left, right, "divtmp"); break;
-  case '==': v = builder.CreateFCmpOEQ(left, right, "eqltmp"); break;
+  case '==': v = createEqualityComparison(left, right); break;
   case '>': std::swap(left, right); eax_fallthrough;
   case '<': v = builder.CreateFCmpULT(left, right, "cmptmp"); break;
   case '>=': std::swap(left, right); eax_fallthrough;
