@@ -13,6 +13,7 @@ using namespace eax;
 Lexer::Lexer() {
   binaryOperatorPrecedence['='] = 1;
   binaryOperatorPrecedence['=='] = 2;
+  binaryOperatorPrecedence['!='] = 2;
   binaryOperatorPrecedence['<'] = 3;
   binaryOperatorPrecedence['>'] = 3;
   binaryOperatorPrecedence['<='] = 3;
@@ -70,6 +71,14 @@ int Lexer::getToken() {
     int ch = readChar();
     if (ch == '=')
       return '==';
+    else
+      unreadChar(ch);
+  }
+  
+  if (lastChar == '!') {
+    int ch = readChar();
+    if (ch == '=')
+      return '!=';
     else
       unreadChar(ch);
   }

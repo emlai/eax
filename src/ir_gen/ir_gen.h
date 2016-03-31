@@ -40,6 +40,7 @@ private:
   llvm::Value* boolToDouble(llvm::Value* boolean);
   llvm::Value* createLogicalNegation(llvm::Value* operand);
   llvm::Value* createEqualityComparison(llvm::Value* lhs, llvm::Value* rhs);
+  llvm::Value* createInequalityComparison(llvm::Value* lhs, llvm::Value* rhs);
   void codegenAssignment(BinaryExpr&);
   void createParamAllocas(Prototype const&, llvm::Function*);
   

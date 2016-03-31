@@ -37,6 +37,15 @@ llvm::Value* IrGen::createEqualityComparison(llvm::Value* lhs, llvm::Value* rhs)
     fatalError("unknown type");
 }
 
+llvm::Value* IrGen::createInequalityComparison(llvm::Value* lhs, llvm::Value* rhs) {
+  if (lhs->getType() == llvm::Type::getInt1Ty(llvm::getGlobalContext()))
+    return builder.CreateICmpNE(lhs, rhs, "neqtmp");
+  else if (lhs->getType() == llvm::Type::getDoubleTy(llvm::getGlobalContext()))
+    return builder.CreateFCmpONE(lhs, rhs, "neqtmp");
+  else
+    fatalError("unknown type");
+}
+
 void IrGen::visit(VariableExpr& expr) {
   values.push(builder.CreateLoad(namedValues.at(expr.getName()), expr.getName()));
 }
@@ -103,6 +112,7 @@ void IrGen::visit(BinaryExpr& expr) {
   case '*': v = builder.CreateFMul(left, right, "multmp"); break;
   case '/': v = builder.CreateFDiv(left, right, "divtmp"); break;
   case '==': v = createEqualityComparison(left, right); break;
+  case '!=': v = createInequalityComparison(left, right); break;
   case '>': std::swap(left, right); eax_fallthrough;
   case '<': v = builder.CreateFCmpULT(left, right, "cmptmp"); break;
   case '>=': std::swap(left, right); eax_fallthrough;
