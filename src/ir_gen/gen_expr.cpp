@@ -47,7 +47,10 @@ llvm::Value* IrGen::createInequalityComparison(llvm::Value* lhs, llvm::Value* rh
 }
 
 void IrGen::visit(VariableExpr& expr) {
-  values.push(builder.CreateLoad(namedValues.at(expr.getName()), expr.getName()));
+  auto iterator = namedValues.find(expr.getName());
+  if (iterator == namedValues.end())
+    fatalError(std::string("unknown variable '") + expr.getName() + "'");
+  values.push(builder.CreateLoad(iterator->second, expr.getName()));
 }
 
 void IrGen::visit(UnaryExpr& expr) {
