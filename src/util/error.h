@@ -7,8 +7,13 @@
 
 namespace eax {
 
-[[noreturn]] inline void fatalError(llvm::StringRef message) {
-  std::cerr << message.str() << std::endl;
+/// Prints the arguments to stderr and aborts the program.
+template<typename T, typename... Ts>
+[[noreturn]] void fatalError(T&& arg, Ts&&... args) {
+  std::cerr << std::forward<T>(arg);
+  using expander = int[];
+  (void)expander{0, (void(std::cerr << std::forward<Ts>(args)), 0)...};
+  std::cerr << std::endl;
   std::exit(1);
 }
 
