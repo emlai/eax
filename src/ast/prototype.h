@@ -3,22 +3,20 @@
 
 #include <vector>
 #include <string>
-#include <llvm/IR/Function.h>
+
+#include "ast_node.h"
 
 namespace eax {
 
 /// Represents a function prototype.
-class Prototype {
+class Prototype : public AstNode {
 public:
   Prototype(std::string name, std::vector<std::string> paramNames)
     : name(std::move(name)), paramNames(std::move(paramNames)) {}
-  llvm::Function* codegen() const;
+  void accept(AstVisitor& visitor) override { visitor.visit(*this); }
   llvm::StringRef getName() const { return name; }
-  
-  /// Creates an 'alloca' instruction for each parameter and registers the
-  /// parameter in the symbol table so that references to it will succeed.
-  void createParamAllocas(llvm::Function*) const;
-  
+  llvm::ArrayRef<std::string> getParamNames() const { return paramNames; }
+
 private:
   std::string name;
   std::vector<std::string> paramNames;

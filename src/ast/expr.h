@@ -4,22 +4,23 @@
 #include <memory>
 #include <vector>
 #include <string>
-#include <llvm/IR/Value.h>
+#include <llvm/ADT/ArrayRef.h>
+
+#include "ast_node.h"
 
 namespace eax {
 
 /// Base class for all expression nodes.
-class Expr {
+class Expr : public AstNode {
 public:
   virtual ~Expr() = default;
-  virtual llvm::Value* codegen() const = 0;
 };
 
 /// Expression class for referencing variables.
 class VariableExpr : public Expr {
 public:
   VariableExpr(std::string name) : name(std::move(name)) {}
-  llvm::Value* codegen() const override;
+  void accept(AstVisitor& visitor) override { visitor.visit(*this); }
   std::string const& getName() const { return name; }
   
 private:
@@ -31,7 +32,9 @@ class UnaryExpr : public Expr {
 public:
   UnaryExpr(char op, std::unique_ptr<Expr> operand)
     : op(op), operand(std::move(operand)) {}
-  llvm::Value* codegen() const override;
+  void accept(AstVisitor& visitor) override { visitor.visit(*this); }
+  char getOp() const { return op; }
+  Expr& getOperand() const { return *operand; }
   
 private:
   char op;
@@ -43,10 +46,10 @@ class BinaryExpr : public Expr {
 public:
   BinaryExpr(int op, std::unique_ptr<Expr> lhs, std::unique_ptr<Expr> rhs)
     : op(op), lhs(std::move(lhs)), rhs(std::move(rhs)) {}
-  llvm::Value* codegen() const override;
-  
-private:
-  llvm::Value* codegenAssignment() const;
+  void accept(AstVisitor& visitor) override { visitor.visit(*this); }
+  int getOp() const { return op; }
+  Expr& getLhs() const { return *lhs; }
+  Expr& getRhs() const { return *rhs; }
   
 private:
   int op;
@@ -59,7 +62,9 @@ class CallExpr : public Expr {
 public:
   CallExpr(std::string fnName, std::vector<std::unique_ptr<Expr>> args)
     : fnName(std::move(fnName)), args(std::move(args)) {}
-  llvm::Value* codegen() const override;
+  void accept(AstVisitor& visitor) override { visitor.visit(*this); }
+  std::string const& getName() const { return fnName; }
+  llvm::ArrayRef<std::unique_ptr<Expr>> getArgs() const { return args; }
   
 private:
   std::string fnName;
@@ -70,7 +75,8 @@ private:
 class NumberExpr : public Expr {
 public:
   NumberExpr(double value) : value(value) {}
-  llvm::Value* codegen() const override;
+  void accept(AstVisitor& visitor) override { visitor.visit(*this); }
+  double getValue() const { return value; }
   
 private:
   double value;
@@ -85,7 +91,10 @@ public:
     : condition(std::move(condition)),
       thenBranch(std::move(thenBranch)),
       elseBranch(std::move(elseBranch)) {}
-  llvm::Value* codegen() const override;
+  void accept(AstVisitor& visitor) override { visitor.visit(*this); }
+  Expr& getCondition() { return *condition; }
+  Expr& getThen() { return *thenBranch; }
+  Expr& getElse() { return *elseBranch; }
   
 private:
   std::unique_ptr<Expr> condition;

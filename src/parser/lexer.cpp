@@ -5,7 +5,6 @@
 #include "lexer.h"
 #include "../ast/expr.h"
 #include "../ast/function.h"
-#include "../ast/globals.h"
 #include "../util/error.h"
 
 using namespace eax;

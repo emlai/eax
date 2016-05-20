@@ -8,13 +8,16 @@
 
 #include "jit.h"
 #include "../ast/function.h"
-#include "../ast/globals.h"
 #include "../parser/lexer.h"
+#include "../ir_gen/ir_gen.h"
 
 using namespace eax;
 
 static std::unique_ptr<JIT> jit;
 static Lexer lexer;
+static IrGen irgen;
+static std::unique_ptr<llvm::Module> globalModule;
+static std::unique_ptr<llvm::legacy::FunctionPassManager> fnPassManager;
 
 static void initModuleAndFnPassManager() {
   globalModule = llvm::make_unique<llvm::Module>("eaxjit", llvm::getGlobalContext());
@@ -32,11 +35,15 @@ static void initModuleAndFnPassManager() {
   // Simplify the control flow graph (deleting unreachable blocks, etc.).
   fnPassManager->add(llvm::createCFGSimplificationPass());
   fnPassManager->doInitialization();
+  
+  irgen.setModule(*globalModule);
+  irgen.setFnPassManager(*fnPassManager);
 }
 
 static void handleFnDefinition() {
   if (auto fn = lexer.parseFnDefinition()) {
-    if (auto ir = fn->codegen()) {
+    fn->accept(irgen);
+    if (auto ir = irgen.getResult()) {
       std::cout << "Parsed a function definition:" << std::endl;
       ir->dump();
       jit->addModule(std::move(globalModule));
@@ -50,7 +57,8 @@ static void handleFnDefinition() {
 static void handleToplevelExpr() {
   // Evaluate a top-level expression into an anonymous function.
   if (auto fn = lexer.parseToplevelExpr()) {
-    if (fn->codegen()) {
+    fn->accept(irgen);
+    if (irgen.getResult()) {
       std::cout << "Parsed a top-level expression." << std::endl;
       
       // JIT the module containing the anonymous expression,
