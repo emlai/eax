@@ -8,6 +8,7 @@
 
 #include "jit.h"
 #include "../ast/function.h"
+#include "../ast/ast_printer.h"
 #include "../parser/lexer.h"
 #include "../ir_gen/ir_gen.h"
 
@@ -16,6 +17,7 @@ using namespace eax;
 static std::unique_ptr<JIT> jit;
 static Lexer lexer;
 static IrGen irgen;
+static AstPrinter printer(std::cout);
 static std::unique_ptr<llvm::Module> globalModule;
 static std::unique_ptr<llvm::legacy::FunctionPassManager> fnPassManager;
 
@@ -42,6 +44,8 @@ static void initModuleAndFnPassManager() {
 
 static void handleFnDefinition() {
   if (auto fn = lexer.parseFnDefinition()) {
+    fn->getBody().accept(printer);
+    std::cout << std::endl;
     fn->accept(irgen);
     if (auto ir = irgen.getResult()) {
       std::cout << "Parsed a function definition:" << std::endl;
@@ -57,6 +61,8 @@ static void handleFnDefinition() {
 static void handleToplevelExpr() {
   // Evaluate a top-level expression into an anonymous function.
   if (auto fn = lexer.parseToplevelExpr()) {
+    fn->getBody().accept(printer);
+    std::cout << std::endl;
     fn->accept(irgen);
     if (irgen.getResult()) {
       std::cout << "Parsed a top-level expression." << std::endl;
