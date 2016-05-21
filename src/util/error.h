@@ -7,9 +7,8 @@
 namespace eax {
 
 /// Prints the arguments to stderr and returns nullptr.
-template<typename T, typename... Ts>
-std::nullptr_t error(T&& arg, Ts&&... args) {
-  std::cerr << std::forward<T>(arg);
+template<typename... Ts>
+std::nullptr_t error(Ts&&... args) {
   using expander = int[];
   (void)expander{0, (void(std::cerr << std::forward<Ts>(args)), 0)...};
   std::cerr << std::endl;
