@@ -48,6 +48,11 @@ private:
   /// name, or, if it doesn't find one, generates a new one from "fnPrototypes".
   llvm::Function* getFunction(llvm::StringRef name);
   
+  /// Creates an "alloca" instruction in the entry block of the given
+  /// function. This is used for mutable variables etc.
+  llvm::AllocaInst* createEntryBlockAlloca(llvm::Function* fn,
+                                           llvm::StringRef varName);
+
 private:
   llvm::LLVMContext& context;
   llvm::IRBuilder<> builder;

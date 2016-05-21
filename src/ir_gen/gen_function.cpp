@@ -2,7 +2,6 @@
 #include <llvm/IR/Function.h>
 
 #include "ir_gen.h"
-#include "ir_builder.h"
 #include "../ast/function.h"
 #include "../util/error.h"
 
@@ -62,4 +61,12 @@ void IrGen::visit(Function& function) {
   
   // Error reading body, remove function.
   fn->eraseFromParent();
+}
+
+llvm::AllocaInst* IrGen::createEntryBlockAlloca(llvm::Function* fn,
+                                                llvm::StringRef varName) {
+  llvm::IRBuilder<> tmpBuilder(&fn->getEntryBlock(), fn->getEntryBlock().begin());
+  return tmpBuilder.CreateAlloca(llvm::Type::getDoubleTy(llvm::getGlobalContext()),
+                                 0,
+                                 varName);
 }

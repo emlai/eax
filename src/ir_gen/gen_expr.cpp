@@ -5,7 +5,6 @@
 #include <llvm/IR/Module.h>
 
 #include "ir_gen.h"
-#include "ir_builder.h"
 #include "../ast/expr.h"
 #include "../util/error.h"
 #include "../util/macros.h"
