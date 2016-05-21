@@ -19,7 +19,7 @@ llvm::Value* IrGen::boolToDouble(llvm::Value* boolean) {
 
 llvm::Value* IrGen::createLogicalNegation(llvm::Value* operand) {
   if (operand->getType() != llvm::Type::getInt1Ty(llvm::getGlobalContext()))
-    fatalError("logical negation requires a Bool operand");
+    return error("logical negation requires a Bool operand");
   
   return builder.CreateICmpEQ(
     operand,
@@ -48,7 +48,7 @@ llvm::Value* IrGen::createInequalityComparison(llvm::Value* lhs, llvm::Value* rh
 void IrGen::visit(VariableExpr& expr) {
   auto iterator = namedValues.find(expr.getName());
   if (iterator == namedValues.end())
-    fatalError("unknown variable '", expr.getName(), "'");
+    return values.push(error("unknown variable '", expr.getName(), "'"));
   values.push(builder.CreateLoad(iterator->second, expr.getName()));
 }
 
@@ -72,7 +72,7 @@ void IrGen::visit(UnaryExpr& expr) {
       "subtmp");
     break;
   default:
-    fatalError("unsupported unary operator");
+    return values.push(error("unsupported unary operator"));
   }
   
   values.push(v);
@@ -80,7 +80,8 @@ void IrGen::visit(UnaryExpr& expr) {
 
 void IrGen::codegenAssignment(BinaryExpr& expr) {
   VariableExpr* lhsVar = dynamic_cast<VariableExpr*>(&expr.getLhs());
-  if (!lhsVar) fatalError("left operand of '=' must be a variable");
+  if (!lhsVar)
+    return values.push(error("left operand of '=' must be a variable"));
   
   expr.getRhs().accept(*this);
   llvm::Value* rhsValue = values.top();
@@ -89,7 +90,7 @@ void IrGen::codegenAssignment(BinaryExpr& expr) {
   
   auto variableIter = namedValues.find(lhsVar->getName());
   if (variableIter == namedValues.end())
-    fatalError("unknown variable name");
+    return values.push(error("unknown variable name"));
   
   builder.CreateStore(rhsValue, variableIter->second);
   values.push(rhsValue);
@@ -119,8 +120,7 @@ void IrGen::visit(BinaryExpr& expr) {
   case '<': v = builder.CreateFCmpULT(left, right, "cmptmp"); break;
   case '>=': std::swap(left, right); eax_fallthrough;
   case '<=': v = builder.CreateFCmpULE(left, right, "cmptmp"); break;
-  default:
-    fatalError("unsupported binary operator");
+  default: return values.push(error("unsupported binary operator"));
   }
   
   values.push(v);
@@ -128,14 +128,11 @@ void IrGen::visit(BinaryExpr& expr) {
 
 void IrGen::visit(CallExpr& expr) {
   llvm::Function* fn = getFunction(expr.getName());
-  if (!fn) {
-    fatalError("unknown function name");
-  }
+  if (!fn) return values.push(error("unknown function name"));
   llvm::ArrayRef<std::unique_ptr<Expr>> const args = expr.getArgs();
   
-  if (fn->arg_size() != args.size()) {
-    fatalError("wrong number of arguments");
-  }
+  if (fn->arg_size() != args.size())
+    return values.push(error("wrong number of arguments"));
   
   std::vector<llvm::Value*> argValues;
   argValues.reserve(args.size());

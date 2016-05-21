@@ -132,7 +132,7 @@ std::unique_ptr<Expr> Lexer::parseParenExpr() {
   nextToken(); // consume '('
   auto value = parseExpr();
   if (!value) return nullptr;
-  if (currentToken != ')') fatalError("expected ')'");
+  if (currentToken != ')') return error("expected ')'");
   nextToken(); // consume ')'
   return value;
 }
@@ -157,7 +157,7 @@ std::unique_ptr<Expr> Lexer::parseIdentifierExpr() {
       }
       if (currentToken == ')') break;
       if (currentToken != ',') {
-        fatalError("expected ')' or ',' in argument list");
+        return error("expected ')' or ',' in argument list");
       }
       nextToken();
     }
@@ -174,7 +174,7 @@ static void unknownTokenError(int token) {
     message << token;
   }
   message << ", expected an expression";
-  fatalError(message.str());
+  error(message.str());
 }
 
 std::unique_ptr<Expr> Lexer::parsePrimaryExpr() {
@@ -253,7 +253,7 @@ std::unique_ptr<Expr> Lexer::parseIfExpr() {
   auto thenBranch = parseExpr();
   if (!thenBranch) return nullptr;
   
-  if (currentToken != TokenElse) fatalError("expected 'else'");
+  if (currentToken != TokenElse) return error("expected 'else'");
   nextToken();
   
   auto elseBranch = parseExpr();
@@ -266,13 +266,13 @@ std::unique_ptr<Expr> Lexer::parseIfExpr() {
 
 std::unique_ptr<Prototype> Lexer::parseFnPrototype() {
   if (currentToken != TokenIdentifier) {
-    fatalError("expected function name in prototype");
+    return error("expected function name in prototype");
   }
   std::string fnName = identifierValue;
   nextToken();
   
   if (currentToken != '(') {
-    fatalError("expected '(' in prototype");
+    return error("expected '(' in prototype");
   }
   
   std::vector<std::string> paramNames;
@@ -284,7 +284,7 @@ std::unique_ptr<Prototype> Lexer::parseFnPrototype() {
   }
   
   if (currentToken != ')') {
-    fatalError("expected ',' or ')' in parameter list");
+    return error("expected ',' or ')' in parameter list");
   }
   nextToken();
   
