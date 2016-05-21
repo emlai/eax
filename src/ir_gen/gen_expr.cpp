@@ -97,9 +97,12 @@ void IrGen::visit(BinaryExpr& expr) {
   
   expr.getLhs().accept(*this);
   llvm::Value* left = values.top();
+  if (!left) return;
   values.pop();
+  
   expr.getRhs().accept(*this);
   llvm::Value* right = values.top();
+  if (!right) return;
   values.pop();
   
   llvm::Value* v;
