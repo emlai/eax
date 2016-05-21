@@ -7,10 +7,10 @@ using namespace eax;
 
 void IrGen::visit(Prototype& proto) {
   std::vector<llvm::Type*> doubles(proto.getParamNames().size(),
-    llvm::Type::getDoubleTy(llvm::getGlobalContext()));
+    llvm::Type::getDoubleTy(context));
   
   auto fnType = llvm::FunctionType::get(
-    llvm::Type::getDoubleTy(llvm::getGlobalContext()), doubles, false);
+    llvm::Type::getDoubleTy(context), doubles, false);
   
   auto fn = llvm::Function::Create(fnType,
                                    llvm::Function::ExternalLinkage,

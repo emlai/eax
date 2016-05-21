@@ -12,34 +12,31 @@
 using namespace eax;
 
 llvm::Value* IrGen::boolToDouble(llvm::Value* boolean) {
-  return builder.CreateUIToFP(boolean,
-                              llvm::Type::getDoubleTy(llvm::getGlobalContext()),
-                              "booltmp");
+  return builder.CreateUIToFP(
+    boolean, llvm::Type::getDoubleTy(context), "booltmp");
 }
 
 llvm::Value* IrGen::createLogicalNegation(llvm::Value* operand) {
-  if (operand->getType() != llvm::Type::getInt1Ty(llvm::getGlobalContext()))
+  if (operand->getType() != llvm::Type::getInt1Ty(context))
     return error("logical negation requires a Bool operand");
   
   return builder.CreateICmpEQ(
-    operand,
-    llvm::ConstantInt::getFalse(llvm::getGlobalContext()),
-    "negtmp");
+    operand, llvm::ConstantInt::getFalse(context), "negtmp");
 }
 
 llvm::Value* IrGen::createEqualityComparison(llvm::Value* lhs, llvm::Value* rhs) {
-  if (lhs->getType() == llvm::Type::getInt1Ty(llvm::getGlobalContext()))
+  if (lhs->getType() == llvm::Type::getInt1Ty(context))
     return builder.CreateICmpEQ(lhs, rhs, "eqltmp");
-  else if (lhs->getType() == llvm::Type::getDoubleTy(llvm::getGlobalContext()))
+  else if (lhs->getType() == llvm::Type::getDoubleTy(context))
     return builder.CreateFCmpOEQ(lhs, rhs, "eqltmp");
   else
     fatalError("unknown type");
 }
 
 llvm::Value* IrGen::createInequalityComparison(llvm::Value* lhs, llvm::Value* rhs) {
-  if (lhs->getType() == llvm::Type::getInt1Ty(llvm::getGlobalContext()))
+  if (lhs->getType() == llvm::Type::getInt1Ty(context))
     return builder.CreateICmpNE(lhs, rhs, "neqtmp");
-  else if (lhs->getType() == llvm::Type::getDoubleTy(llvm::getGlobalContext()))
+  else if (lhs->getType() == llvm::Type::getDoubleTy(context))
     return builder.CreateFCmpONE(lhs, rhs, "neqtmp");
   else
     fatalError("unknown type");
@@ -67,9 +64,7 @@ void IrGen::visit(UnaryExpr& expr) {
     v = operandValue; break;
   case '-':
     v = builder.CreateFSub(
-      llvm::ConstantFP::get(llvm::getGlobalContext(), llvm::APFloat(0.0)),
-      operandValue,
-      "subtmp");
+      llvm::ConstantFP::get(context, llvm::APFloat(0.0)), operandValue, "subtmp");
     break;
   default:
     return values.push(error("unsupported unary operator"));
@@ -149,13 +144,11 @@ void IrGen::visit(CallExpr& expr) {
 }
 
 void IrGen::visit(NumberExpr& expr) {
-  values.push(llvm::ConstantFP::get(llvm::getGlobalContext(),
-                                    llvm::APFloat(expr.getValue())));
+  values.push(llvm::ConstantFP::get(context, llvm::APFloat(expr.getValue())));
 }
 
 void IrGen::visit(BoolExpr& expr) {
-  values.push(llvm::ConstantInt::get(llvm::getGlobalContext(),
-                                     llvm::APInt(1, expr.getValue())));
+  values.push(llvm::ConstantInt::get(context, llvm::APInt(1, expr.getValue())));
 }
 
 void IrGen::visit(IfExpr& expr) {
@@ -168,18 +161,13 @@ void IrGen::visit(IfExpr& expr) {
   
   // Convert condition to a bool by comparing to 0.
   conditionValue = builder.CreateFCmpONE(
-    conditionValue,
-    llvm::ConstantFP::get(llvm::getGlobalContext(), llvm::APFloat(0.0)),
-    "ifcond");
+    conditionValue, llvm::ConstantFP::get(context, llvm::APFloat(0.0)), "ifcond");
   
   llvm::Function* fn = builder.GetInsertBlock()->getParent();
   
-  llvm::BasicBlock* thenBlock = llvm::BasicBlock::Create(
-    llvm::getGlobalContext(), "then", fn);
-  llvm::BasicBlock* elseBlock = llvm::BasicBlock::Create(
-    llvm::getGlobalContext(), "else");
-  llvm::BasicBlock* mergeBlock = llvm::BasicBlock::Create(
-    llvm::getGlobalContext(), "ifcont");
+  llvm::BasicBlock* thenBlock = llvm::BasicBlock::Create(context, "then", fn);
+  llvm::BasicBlock* elseBlock = llvm::BasicBlock::Create(context, "else");
+  llvm::BasicBlock* mergeBlock = llvm::BasicBlock::Create(context, "ifcont");
   
   builder.CreateCondBr(conditionValue, thenBlock, elseBlock);
   
@@ -214,7 +202,7 @@ void IrGen::visit(IfExpr& expr) {
   builder.SetInsertPoint(mergeBlock);
   
   llvm::PHINode* phi = builder.CreatePHI(
-    llvm::Type::getDoubleTy(llvm::getGlobalContext()), 2, "iftmp");
+    llvm::Type::getDoubleTy(context), 2, "iftmp");
   phi->addIncoming(thenValue, thenBlock);
   phi->addIncoming(elseValue, elseBlock);
   values.push(phi);

@@ -41,9 +41,7 @@ void IrGen::visit(Function& function) {
   auto fn = getFunction(prototypeName);
   assert(fn);
   
-  auto basicBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(),
-                                             "entry",
-                                             fn);
+  auto basicBlock = llvm::BasicBlock::Create(context, "entry", fn);
   builder.SetInsertPoint(basicBlock);
   
   namedValues.clear();
@@ -66,7 +64,5 @@ void IrGen::visit(Function& function) {
 llvm::AllocaInst* IrGen::createEntryBlockAlloca(llvm::Function* fn,
                                                 llvm::StringRef varName) {
   llvm::IRBuilder<> tmpBuilder(&fn->getEntryBlock(), fn->getEntryBlock().begin());
-  return tmpBuilder.CreateAlloca(llvm::Type::getDoubleTy(llvm::getGlobalContext()),
-                                 0,
-                                 varName);
+  return tmpBuilder.CreateAlloca(llvm::Type::getDoubleTy(context), 0, varName);
 }
