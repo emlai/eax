@@ -132,7 +132,8 @@ void IrGen::visit(CallExpr& expr) {
   llvm::ArrayRef<std::unique_ptr<Expr>> const args = expr.getArgs();
   
   if (fn->arg_size() != args.size())
-    return values.push(error("wrong number of arguments"));
+    return values.push(error("wrong number of arguments, expected ",
+                             fn->arg_size()));
   
   std::vector<llvm::Value*> argValues;
   argValues.reserve(args.size());
