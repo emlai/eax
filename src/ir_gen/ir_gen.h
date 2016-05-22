@@ -43,6 +43,7 @@ private:
   llvm::Value* createInequalityComparison(llvm::Value* lhs, llvm::Value* rhs);
   void codegenAssignment(BinaryExpr&);
   void createParamAllocas(Prototype const&, llvm::Function*);
+  llvm::Function* initFunction(Function&, Prototype&);
   
   /// Searches "module" for an existing function declaration with the given
   /// name, or, if it doesn't find one, generates a new one from "fnPrototypes".
@@ -61,6 +62,7 @@ private:
   std::unordered_map<std::string, llvm::AllocaInst*> namedValues;
   std::unordered_map<std::string, std::unique_ptr<Prototype>> fnPrototypes;
   std::stack<llvm::Value*> values;
+  llvm::Type* returnType = llvm::Type::getVoidTy(context); // Dummy initial value
 };
 
 }

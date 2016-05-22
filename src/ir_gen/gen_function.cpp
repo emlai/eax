@@ -34,22 +34,35 @@ llvm::Function* IrGen::getFunction(llvm::StringRef name) {
   return nullptr;
 }
 
-void IrGen::visit(Function& function) {
-  auto& prototypeRef = *function.getPrototype();
-  llvm::StringRef prototypeName = function.getPrototype()->getName();
-  fnPrototypes[prototypeName] = std::move(function.getPrototype());
-  auto fn = getFunction(prototypeName);
+llvm::Function* IrGen::initFunction(Function& function, Prototype& proto) {
+  auto fn = getFunction(proto.getName());
   assert(fn);
   
   auto basicBlock = llvm::BasicBlock::Create(context, "entry", fn);
   builder.SetInsertPoint(basicBlock);
   
   namedValues.clear();
-  createParamAllocas(prototypeRef, fn);
+  createParamAllocas(proto, fn);
   
   function.getBody().accept(*this);
+  return fn;
+}
+
+void IrGen::visit(Function& function) {
+  auto& proto = *function.getPrototype();
+  fnPrototypes[proto.getName()] = std::move(function.getPrototype());
+  llvm::Function* fn = initFunction(function, proto);
+  
   if (auto value = values.top()) {
     values.pop();
+    returnType = value->getType();
+    
+    // Recreate function with correct return type.
+    fn->eraseFromParent();
+    fn = initFunction(function, proto);
+    value = values.top();
+    values.pop();
+    
     builder.CreateRet(value);
     llvm::verifyFunction(*fn);
     fnPassManager->run(*fn);
