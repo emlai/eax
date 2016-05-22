@@ -11,6 +11,7 @@
 #include "../ast/ast_printer.h"
 #include "../parser/lexer.h"
 #include "../ir_gen/ir_gen.h"
+#include "../util/error.h"
 
 using namespace eax;
 
@@ -42,6 +43,19 @@ static void initModuleAndFnPassManager() {
   irgen.setFnPassManager(*fnPassManager);
 }
 
+static std::string evaluate(llvm::orc::TargetAddress addr, llvm::Type* type) {
+  if (type == llvm::Type::getInt1Ty(llvm::getGlobalContext())) {
+    return (reinterpret_cast<bool(*)()>(addr)() ? "true" : "false");
+  }
+  if (type == llvm::Type::getDoubleTy(llvm::getGlobalContext())) {
+    return std::to_string(reinterpret_cast<double(*)()>(addr)());
+  }
+  std::string typeName;
+  llvm::raw_string_ostream stream(typeName);
+  type->print(stream);
+  return "unknown type '" + stream.str() + "'";
+}
+
 static void handleFnDefinition() {
   if (auto fn = lexer.parseFnDefinition()) {
     fn->getBody().accept(printer);
@@ -64,8 +78,12 @@ static void handleToplevelExpr() {
     fn->getBody().accept(printer);
     std::cout << std::endl;
     fn->accept(irgen);
-    if (irgen.getResult()) {
+    if (auto ir = irgen.getResult()) {
       std::cout << "Parsed a top-level expression." << std::endl;
+      
+      // Get the type of the expression.
+      llvm::Type* type = ir->getType()->getPointerElementType();
+      type = llvm::cast<llvm::FunctionType>(type)->getReturnType();
       
       // JIT the module containing the anonymous expression,
       // keeping a handle so we can free it later.
@@ -75,10 +93,9 @@ static void handleToplevelExpr() {
       auto exprSym = jit->findSymbol("__anon_expr");
       assert(exprSym && "function not found");
       
-      // Get the symbol's address and cast it to the right type
-      // so we can call it as a native function.
-      auto fnPtr = reinterpret_cast<double(*)()>(exprSym.getAddress());
-      std::cout << "Evaluated to " << fnPtr() << std::endl;
+      std::cout << "Evaluated to "
+                << evaluate(exprSym.getAddress(), type)
+                << std::endl;
       
       // Delete the anonymous expression module from the JIT.
       jit->removeModule(moduleHandle);
