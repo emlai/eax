@@ -101,7 +101,7 @@ static void mainInterpreterLoop() {
   std::cout << std::setfill('0');
   
   for (int count = 0;; ++count) {
-    std::cout << std::setw(3) << count << "> ";
+    std::cout << "\e[2m" << std::setw(3) << count << ">\e[22m ";
     
     switch (lexer.nextToken()) {
     case TokenEof:
