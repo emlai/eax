@@ -58,11 +58,8 @@ static std::string evaluate(llvm::orc::TargetAddress addr, llvm::Type* type) {
 
 static void handleFnDefinition() {
   if (auto fn = lexer.parseFnDefinition()) {
-    fn->getBody().accept(printer);
-    std::cout << std::endl;
     fn->accept(irgen);
     if (auto ir = irgen.getResult()) {
-      std::cout << "Parsed a function definition:" << std::endl;
       ir->dump();
       jit->addModule(std::move(globalModule));
       initModuleAndFnPassManager();
@@ -75,12 +72,8 @@ static void handleFnDefinition() {
 static void handleToplevelExpr() {
   // Evaluate a top-level expression into an anonymous function.
   if (auto fn = lexer.parseToplevelExpr()) {
-    fn->getBody().accept(printer);
-    std::cout << std::endl;
     fn->accept(irgen);
     if (auto ir = irgen.getResult()) {
-      std::cout << "Parsed a top-level expression." << std::endl;
-      
       // Get the type of the expression.
       llvm::Type* type = ir->getType()->getPointerElementType();
       type = llvm::cast<llvm::FunctionType>(type)->getReturnType();
@@ -93,8 +86,7 @@ static void handleToplevelExpr() {
       auto exprSym = jit->findSymbol("__anon_expr");
       assert(exprSym && "function not found");
       
-      std::cout << "Evaluated to "
-                << evaluate(exprSym.getAddress(), type)
+      std::cout << evaluate(exprSym.getAddress(), type)
                 << std::endl;
       
       // Delete the anonymous expression module from the JIT.
