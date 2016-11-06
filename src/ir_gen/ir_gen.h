@@ -18,7 +18,7 @@ namespace eax {
 
 class IrGen : public AstVisitor {
 public:
-  IrGen() : context(llvm::getGlobalContext()), builder(context) {}
+  IrGen(llvm::LLVMContext& context) : context(context), builder(context) {}
   llvm::Value* getResult() const { return values.top(); }
   void setModule(llvm::Module& module) { this->module = &module; }
   void setFnPassManager(llvm::legacy::FunctionPassManager& fpm) {

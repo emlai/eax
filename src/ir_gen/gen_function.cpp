@@ -12,7 +12,7 @@ void IrGen::createParamAllocas(Prototype const& proto, llvm::Function* fn) {
   
   for (auto& paramName : proto.getParamNames()) {
     llvm::AllocaInst* alloca = createEntryBlockAlloca(fn, paramName);
-    builder.CreateStore(argIter, alloca);
+    builder.CreateStore(&*argIter, alloca);
     namedValues[paramName] = alloca;
     ++argIter;
   }

@@ -5,6 +5,7 @@
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/Transforms/Scalar.h>
+#include "llvm/Transforms/Scalar/GVN.h"
 
 #include "jit.h"
 #include "../ast/function.h"
@@ -17,13 +18,14 @@ using namespace eax;
 
 static std::unique_ptr<JIT> jit;
 static Lexer lexer;
-static IrGen irgen;
+static llvm::LLVMContext llvmContext;
+static IrGen irgen(llvmContext);
 static AstPrinter printer(std::cout);
 static std::unique_ptr<llvm::Module> globalModule;
 static std::unique_ptr<llvm::legacy::FunctionPassManager> fnPassManager;
 
 static void initModuleAndFnPassManager() {
-  globalModule = llvm::make_unique<llvm::Module>("eaxjit", llvm::getGlobalContext());
+  globalModule = llvm::make_unique<llvm::Module>("eaxjit", llvmContext);
   globalModule->setDataLayout(jit->getTargetMachine().createDataLayout());
   
   fnPassManager = llvm::make_unique<llvm::legacy::FunctionPassManager>(globalModule.get());
@@ -44,10 +46,10 @@ static void initModuleAndFnPassManager() {
 }
 
 static std::string evaluate(llvm::orc::TargetAddress addr, llvm::Type* type) {
-  if (type == llvm::Type::getInt1Ty(llvm::getGlobalContext())) {
+  if (type == llvm::Type::getInt1Ty(llvmContext)) {
     return (reinterpret_cast<bool(*)()>(addr)() ? "true" : "false");
   }
-  if (type == llvm::Type::getDoubleTy(llvm::getGlobalContext())) {
+  if (type == llvm::Type::getDoubleTy(llvmContext)) {
     return std::to_string(reinterpret_cast<double(*)()>(addr)());
   }
   std::string typeName;
